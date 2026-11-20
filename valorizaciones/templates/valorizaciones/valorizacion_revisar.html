@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block titulo %}Revisar valorización{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Revisión de valorización N° {{ object.numero }}</h5></div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-sm-4">Obra</dt><dd class="col-sm-8">{{ object.obra.codigo }} - {{ object.obra.nombre }}</dd>
+                    <dt class="col-sm-4">Periodo</dt><dd class="col-sm-8">{{ object.periodo|date:"F Y" }}</dd>
+                    <dt class="col-sm-4">Monto</dt><dd class="col-sm-8">{{ object.monto|moneda }}</dd>
+                    <dt class="col-sm-4">Fecha de presentación</dt><dd class="col-sm-8">{{ object.fecha_presentacion|date:"d/m/Y" }}</dd>
+                    <dt class="col-sm-4">Registrado por</dt><dd class="col-sm-8">{{ object.registrado_por.get_full_name }}</dd>
+                    {% if object.archivo_pdf %}
+                    <dt class="col-sm-4">Sustento</dt><dd class="col-sm-8"><a href="{{ object.archivo_pdf.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ver documento</a></dd>
+                    {% endif %}
+                    {% if object.observaciones_revision %}
+                    <dt class="col-sm-4">Observación anterior</dt><dd class="col-sm-8">{{ object.observaciones_revision|linebreaksbr }}</dd>
+                    {% endif %}
+                </dl>
+                <hr>
+                <form method="post" data-confirmar="¿Confirma el resultado de la revisión? No podrá modificarse después.">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">Resultado de la revisión *</label>{{ form.estado }}</div>
+                    <div class="mb-3"><label class="form-label">Observaciones de la revisión</label>{{ form.observaciones_revision }}</div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Guardar revisión</button>
+                        <a href="{% url 'valorizaciones:lista' object.obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block titulo %}{% if object %}Corregir avance{% else %}Registrar avance{% endif %}{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> {% if object %}Corregir avance{% else %}Registrar avance{% endif %} - {{ obra.codigo }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" data-confirmar="¿Confirma {% if object %}la corrección{% else %}el registro{% endif %} del avance del periodo?">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Periodo (mes) *</label>{{ form.periodo }}
+                        </div>
+                        {% if form.avance_fisico_ejecutado_acum %}
+                        <div class="col-md-4">
+                            <label class="form-label">Av. físico ejecutado acum. (%) *</label>{{ form.avance_fisico_ejecutado_acum }}
+                        </div>
+                        {% endif %}
+                        <div class="col-md-4">
+                            <label class="form-label">Monto devengado acum. (S/) *</label>{{ form.monto_devengado_acum }}
+                            <div class="form-text">Presupuesto vigente: {{ obra.presupuesto_vigente|moneda }}</div>
+                        </div>
+                    </div>
+
+                    {% if form.partidas %}
+                    <h6 class="mt-4">Metrados ejecutados acumulados por partida</h6>
+                    <p class="small text-muted mb-2">El avance físico se calcula automáticamente a partir de estos metrados, ponderados por el costo de cada partida del expediente técnico.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light"><tr><th>Partida</th><th style="width:40%">Metrado ejecutado acumulado</th></tr></thead>
+                            <tbody>
+                            {% for campo in form.campos_metrado %}
+                                <tr>
+                                    <td class="small">{{ campo.label }}<div class="text-muted">{{ campo.help_text }}</div></td>
+                                    <td>{{ campo }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    {% if form.avance_fisico_programado_acum %}
+                    <div class="alert alert-warning small mt-3 mb-2">
+                        Esta obra aún no tiene calendario de ejecución registrado; ingrese los valores programados del periodo.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Av. físico programado acum. (%) *</label>{{ form.avance_fisico_programado_acum }}</div>
+                        <div class="col-md-6"><label class="form-label">Av. financiero programado acum. (%) *</label>{{ form.avance_financiero_programado_acum }}</div>
+                    </div>
+                    {% else %}
+                    <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle"></i> El avance programado se toma automáticamente del calendario de ejecución valorizado, y el avance financiero se calcula como monto devengado / presupuesto vigente.</p>
+                    {% endif %}
+
+                    <div class="mt-3"><label class="form-label">Observaciones / incidencias</label>{{ form.observaciones }}</div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar avance</button>
+                        <a href="{% url 'obras:detalle' obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

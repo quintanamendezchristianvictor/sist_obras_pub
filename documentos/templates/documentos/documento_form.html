@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Cargar documento{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-folder2-open"></i> Cargar documento - {{ obra.codigo }}</h5></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Tipo de documento *</label>{{ form.tipo_documento }}</div>
+                        <div class="col-md-6"><label class="form-label">Periodo asociado</label>{{ form.periodo }}</div>
+                        <div class="col-12"><label class="form-label">Nombre del documento *</label>{{ form.nombre }}</div>
+                        <div class="col-12"><label class="form-label">Descripción</label>{{ form.descripcion }}</div>
+                        <div class="col-12"><label class="form-label">Archivo *</label>{{ form.archivo }}</div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Cargar</button>
+                        <a href="{% url 'documentos:lista' obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

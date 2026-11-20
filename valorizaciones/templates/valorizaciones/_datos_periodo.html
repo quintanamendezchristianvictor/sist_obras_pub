@@ -1,0 +1,49 @@
+{% load core_extras %}
+{% comment %}
+Datos del periodo incorporados automáticamente al informe mensual (RF-17).
+Se usa tanto en la vista previa HTML como en el PDF: por eso solo emplea
+tablas simples, compatibles con xhtml2pdf.
+{% endcomment %}
+<h3 class="seccion">1. Avance físico y financiero del periodo</h3>
+{% if datos.avance %}
+<table class="table table-sm table-bordered">
+    <tr><th></th><th>Programado acum.</th><th>Ejecutado acum.</th><th>Desviación</th></tr>
+    <tr><td>Avance físico</td><td>{{ datos.avance.avance_fisico_programado_acum }}%</td><td>{{ datos.avance.avance_fisico_ejecutado_acum }}%</td><td>{{ datos.avance.desviacion_fisica|floatformat:2 }} pp</td></tr>
+    <tr><td>Avance financiero</td><td>{{ datos.avance.avance_financiero_programado_acum }}%</td><td>{{ datos.avance.avance_financiero_ejecutado_acum }}%</td><td>{{ datos.avance.desviacion_financiera|floatformat:2 }} pp</td></tr>
+</table>
+<p>Estado de la obra en el periodo: <strong>{{ datos.avance.get_estado_semaforo_display }}</strong>.
+Monto devengado acumulado: <strong>{{ datos.avance.monto_devengado_acum|moneda }}</strong>.
+{% if datos.programado %}Meta programada del periodo: {{ datos.programado.meta_programada|default:"-" }} ({{ datos.programado.monto_programado|moneda }}).{% endif %}</p>
+<p><strong>Incidencias (cuaderno de obra):</strong> {{ datos.avance.observaciones|default:"Sin incidencias registradas."|linebreaksbr }}</p>
+<p>Evidencias fotográficas registradas en el periodo: {{ datos.evidencias|length }}.</p>
+{% else %}
+<p>No se registró avance de obra para este periodo.</p>
+{% endif %}
+
+<h3 class="seccion">2. Valorizaciones del periodo</h3>
+<table class="table table-sm table-bordered">
+    <tr><th>N°</th><th>Monto</th><th>Presentación</th><th>Estado</th></tr>
+    {% for v in datos.valorizaciones %}
+    <tr><td>{{ v.numero }}</td><td>{{ v.monto|moneda }}</td><td>{{ v.fecha_presentacion|date:"d/m/Y" }}</td><td>{{ v.get_estado_display }}</td></tr>
+    {% empty %}
+    <tr><td colspan="4">Sin valorizaciones en el periodo.</td></tr>
+    {% endfor %}
+</table>
+<p>Monto valorizado aprobado acumulado a la fecha: <strong>{{ datos.valorizado_aprobado_acumulado|moneda }}</strong>.</p>
+
+<h3 class="seccion">3. Modificaciones contractuales del periodo</h3>
+<table class="table table-sm table-bordered">
+    <tr><th>Tipo</th><th>Detalle</th><th>Estado</th></tr>
+    {% for a in datos.ampliaciones %}
+    <tr><td>Ampliación de plazo N° {{ a.numero }}</td><td>{{ a.dias_solicitados }} días solicitados{% if a.estado == 'APROBADA' %}, {{ a.dias_otorgados }} otorgados{% endif %}</td><td>{{ a.get_estado_display }}{% if a.resolucion %} ({{ a.resolucion }}){% endif %}</td></tr>
+    {% endfor %}
+    {% for ad in datos.adicionales %}
+    <tr><td>{{ ad.get_tipo_display }} N° {{ ad.numero }}</td><td>{{ ad.monto|moneda }}</td><td>{{ ad.get_estado_display }}{% if ad.resolucion %} ({{ ad.resolucion }}){% endif %}</td></tr>
+    {% endfor %}
+    {% if not datos.ampliaciones and not datos.adicionales %}
+    <tr><td colspan="3">Sin modificaciones contractuales en el periodo.</td></tr>
+    {% endif %}
+</table>
+<p>Presupuesto vigente: <strong>{{ datos.presupuesto_vigente|moneda }}</strong> &middot;
+Plazo vigente: <strong>{{ datos.plazo_vigente }} días</strong> &middot;
+Culminación vigente: <strong>{{ datos.fecha_fin_vigente|date:"d/m/Y" }}</strong>.</p>

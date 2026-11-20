@@ -1,0 +1,114 @@
+erDiagram
+    usuarios_usuario {
+        bigint id PK
+        varchar_150 username UK
+        varchar_150 first_name
+        varchar_150 last_name
+        varchar_254 email
+        bool is_active
+        varchar_20 rol
+        varchar_1 sexo
+        varchar_8 dni UK
+        varchar_20 telefono
+        varchar_100 cargo
+        varchar_150 unidad_organica
+    }
+    core_bitacora {
+        bigint id PK
+        bigint usuario_id FK
+        varchar_20 accion
+        varchar_100 modulo
+        varchar_255 detalle
+        varchar_255 ruta
+        char direccion_ip
+        datetime fecha
+    }
+    core_configuracion {
+        bigint id PK
+        varchar_200 nombre_entidad
+        varchar_200 nombre_sistema
+        integer umbral_riesgo
+        integer umbral_atraso
+    }
+    obras_obra {
+        bigint id PK
+        varchar_20 codigo UK
+        varchar_255 nombre
+        longtext descripcion
+        varchar_255 direccion
+        varchar_100 distrito
+        varchar_100 provincia
+        varchar_100 departamento
+        varchar_30 modalidad_ejecucion
+        varchar_255 meta_fisica
+        varchar_50 unidad_medida
+        integer plazo_ejecucion_dias
+        date fecha_inicio
+        date fecha_fin_programada
+        decimal_14_2 presupuesto_asignado
+        varchar_200 contratista
+        varchar_11 contratista_ruc
+        varchar_20 estado
+        varchar_150 unidad_organica
+        bigint residente_id FK
+        bigint supervisor_id FK
+        bigint creado_por_id FK
+        datetime fecha_registro
+        datetime fecha_actualizacion
+    }
+    obras_expedientetecnico {
+        bigint id PK
+        bigint obra_id FK, UK
+        varchar_100 numero_expediente
+        varchar_200 entidad_formuladora
+        date fecha_aprobacion
+        decimal_14_2 monto_expediente
+        varchar archivo
+        longtext observaciones
+    }
+    obras_partidaexpediente {
+        bigint id PK
+        bigint expediente_id FK, UK
+        varchar_20 item UK
+        varchar_255 descripcion
+        varchar_20 unidad
+        decimal_14_2 metrado
+        decimal_14_2 precio_unitario
+    }
+    obras_fichainfobras {
+        bigint id PK
+        bigint obra_id FK, UK
+        varchar_20 naturaleza
+        decimal_9_6 latitud
+        decimal_9_6 longitud
+        varchar_255 convenio
+        date fecha_entrega_terreno
+        varchar_60 contrato_numero
+        date contrato_fecha
+        decimal_14_2 contrato_monto
+        decimal_14_2 adelanto_directo
+        decimal_14_2 adelanto_materiales
+        longtext controversias
+        date recepcion_fecha
+        varchar_100 recepcion_acta
+        date liquidacion_fecha
+        decimal_14_2 liquidacion_monto
+        varchar_100 liquidacion_resolucion
+        varchar_200 transferencia_entidad
+        date transferencia_fecha
+    }
+    obras_paralizacionobra {
+        bigint id PK
+        bigint obra_id FK
+        date fecha_inicio
+        date fecha_fin
+        varchar_255 motivo
+    }
+    usuarios_usuario |o--o{ core_bitacora : "usuario"
+    usuarios_usuario |o--o{ obras_obra : "residente"
+    usuarios_usuario |o--o{ obras_obra : "supervisor"
+    usuarios_usuario |o--o{ obras_obra : "creado_por"
+    obras_obra ||--o| obras_expedientetecnico : "obra"
+    obras_expedientetecnico ||--o{ obras_partidaexpediente : "expediente"
+    obras_obra ||--o| obras_fichainfobras : "obra"
+    obras_obra ||--o{ obras_paralizacionobra : "obra"

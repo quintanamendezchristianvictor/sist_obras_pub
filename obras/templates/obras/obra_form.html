@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titulo %}{% if object %}Editar obra{% else %}Nueva obra{% endif %}{% endblock %}
+{% block contenido %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-cone-striped"></i> {% if object %}Editar ficha técnica{% else %}Registrar nueva obra{% endif %}</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <h6 class="text-primary">Identificación y ubicación</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><label class="form-label">Código / CUI *</label>{{ form.codigo }}</div>
+                <div class="col-md-9"><label class="form-label">Nombre de la obra *</label>{{ form.nombre }}</div>
+                <div class="col-12"><label class="form-label">Descripción</label>{{ form.descripcion }}</div>
+                <div class="col-md-6"><label class="form-label">Dirección / sector</label>{{ form.direccion }}</div>
+                <div class="col-md-2"><label class="form-label">Distrito</label>{{ form.distrito }}</div>
+                <div class="col-md-2"><label class="form-label">Provincia</label>{{ form.provincia }}</div>
+                <div class="col-md-2"><label class="form-label">Departamento</label>{{ form.departamento }}</div>
+            </div>
+
+            <h6 class="text-primary">Datos técnicos y presupuestales</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4"><label class="form-label">Modalidad de ejecución *</label>{{ form.modalidad_ejecucion }}</div>
+                <div class="col-md-4"><label class="form-label">Meta física *</label>{{ form.meta_fisica }}</div>
+                <div class="col-md-4"><label class="form-label">Unidad de medida</label>{{ form.unidad_medida }}</div>
+                <div class="col-md-3"><label class="form-label">Plazo de ejecución (días) *</label>{{ form.plazo_ejecucion_dias }}</div>
+                <div class="col-md-3"><label class="form-label">Fecha de inicio *</label>{{ form.fecha_inicio }}</div>
+                <div class="col-md-3"><label class="form-label">Culminación programada *</label>{{ form.fecha_fin_programada }}</div>
+                <div class="col-md-3"><label class="form-label">Presupuesto asignado (S/) *</label>{{ form.presupuesto_asignado }}</div>
+            </div>
+
+            <h6 class="text-primary">Estado y responsables</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><label class="form-label">Estado *</label>{{ form.estado }}</div>
+                <div class="col-md-3"><label class="form-label">Unidad orgánica</label>{{ form.unidad_organica }}<datalist id="unidades-organicas">{% for u in form.unidades_sugeridas %}<option value="{{ u }}"></option>{% endfor %}</datalist></div>
+                <div class="col-md-3"><label class="form-label">Residente de obra</label>{{ form.residente }}</div>
+                <div class="col-md-3"><label class="form-label">Supervisor / Inspector</label>{{ form.supervisor }}</div>
+                <div class="col-md-6"><label class="form-label">Contratista (ejecución por contrata)</label>{{ form.contratista }}</div>
+                <div class="col-md-3"><label class="form-label">RUC del contratista</label>{{ form.contratista_ruc }}</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+                <a href="{% url 'obras:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

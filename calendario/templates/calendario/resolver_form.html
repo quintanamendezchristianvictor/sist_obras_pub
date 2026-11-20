@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block titulo %}Resolver solicitud{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Resolver: {{ object }}</h5></div>
+            <div class="card-body">
+                <dl class="row small">
+                    <dt class="col-sm-4">Obra</dt><dd class="col-sm-8">{{ obra.codigo }} - {{ obra.nombre }}</dd>
+                    <dt class="col-sm-4">Fecha de solicitud</dt><dd class="col-sm-8">{{ object.fecha_solicitud|date:"d/m/Y" }}</dd>
+                    {% if form.dias_otorgados %}
+                    <dt class="col-sm-4">Días solicitados</dt><dd class="col-sm-8">{{ object.dias_solicitados }}</dd>
+                    <dt class="col-sm-4">Motivo</dt><dd class="col-sm-8">{{ object.motivo|linebreaksbr }}</dd>
+                    <dt class="col-sm-4">Plazo vigente actual</dt><dd class="col-sm-8">{{ obra.plazo_vigente_dias }} días (culmina el {{ obra.fecha_fin_vigente|date:"d/m/Y" }})</dd>
+                    {% else %}
+                    <dt class="col-sm-4">Monto</dt><dd class="col-sm-8">{{ object.monto|moneda }}</dd>
+                    <dt class="col-sm-4">Sustento técnico</dt><dd class="col-sm-8">{{ object.sustento|linebreaksbr }}</dd>
+                    <dt class="col-sm-4">Presupuesto vigente actual</dt><dd class="col-sm-8">{{ obra.presupuesto_vigente|moneda }}</dd>
+                    {% endif %}
+                    {% if object.documento_sustento %}
+                    <dt class="col-sm-4">Sustento</dt><dd class="col-sm-8"><a href="{{ object.documento_sustento.url }}" target="_blank"><i class="bi bi-file-earmark"></i> Ver documento</a></dd>
+                    {% endif %}
+                </dl>
+                <hr>
+                <form method="post" data-confirmar="Una vez resuelta, la solicitud no podrá modificarse y se recalculará el plazo o presupuesto vigente de la obra. ¿Desea continuar?">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Decisión *</label>{{ form.estado }}</div>
+                        {% if form.dias_otorgados %}
+                        <div class="col-md-6"><label class="form-label">Días otorgados *</label>{{ form.dias_otorgados }}</div>
+                        {% endif %}
+                        <div class="col-md-6"><label class="form-label">Fecha de resolución *</label>{{ form.fecha_aprobacion }}</div>
+                        <div class="col-md-6"><label class="form-label">N° de resolución *</label>{{ form.resolucion }}</div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Registrar resolución</button>
+                        <a href="{% if form.dias_otorgados %}{% url 'calendario:ampliaciones' obra.pk %}{% else %}{% url 'calendario:adicionales' obra.pk %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

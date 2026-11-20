@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block titulo %}{{ obra.codigo }} - {{ obra.nombre }}{% endblock %}
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+    <div>
+        <h4 class="mb-0">{{ obra.codigo }} - {{ obra.nombre }}</h4>
+        <p class="text-muted mb-0"><i class="bi bi-geo-alt"></i> {{ obra.direccion }}, {{ obra.distrito }}, {{ obra.provincia }}, {{ obra.departamento }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="badge badge-semaforo-{{ obra.estado_semaforo.0 }} fs-6 align-self-center">{{ obra.get_estado_display }}</span>
+        {% if request.user.rol == 'ADMIN' %}
+        <a href="{% url 'obras:editar' obra.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Editar</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Avance físico</div>
+            <div class="valor">{{ obra.avance_fisico_acumulado }}%</div>
+            <div class="small text-muted">Programado: {{ obra.avance_fisico_programado_acumulado }}%</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Avance financiero</div>
+            <div class="valor">{{ obra.avance_financiero_acumulado }}%</div>
+            <div class="small text-muted">Programado: {{ obra.avance_financiero_programado_acumulado }}%</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Presupuesto vigente</div>
+            <div class="valor fs-5">{{ obra.presupuesto_vigente|moneda }}</div>
+            <div class="small text-muted">Asignado: {{ obra.presupuesto_asignado|moneda }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Plazo vigente</div>
+            <div class="valor fs-5">{{ obra.plazo_vigente_dias }} días</div>
+            <div class="small text-muted">Original: {{ obra.plazo_ejecucion_dias }} días &middot; culmina {{ obra.fecha_fin_vigente|date:"d/m/Y" }}</div>
+        </div></div>
+    </div>
+</div>
+
+<ul class="nav nav-pills mb-3 flex-wrap" id="tabsObra" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#resumen">Resumen</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#avances">Avances</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#valorizaciones">Valorizaciones</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#informes">Informes</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#calendario">Calendario</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#modificaciones">Modificaciones</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#documentos">Documentos</button></li>
+</ul>
+
+<div class="tab-content">
+
+    <div class="tab-pane fade show active" id="resumen">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <strong>Datos generales</strong>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5">Modalidad de ejecución</dt><dd class="col-sm-7">{{ obra.get_modalidad_ejecucion_display }}</dd>
+                            <dt class="col-sm-5">Meta física</dt><dd class="col-sm-7">{{ obra.meta_fisica }} {{ obra.unidad_medida }}</dd>
+                            <dt class="col-sm-5">Unidad orgánica</dt><dd class="col-sm-7">{{ obra.unidad_organica }}</dd>
+                            <dt class="col-sm-5">Residente de obra</dt><dd class="col-sm-7">{{ obra.residente.get_full_name|default:"No asignado" }}</dd>
+                            <dt class="col-sm-5">Supervisor / Inspector</dt><dd class="col-sm-7">{{ obra.supervisor.get_full_name|default:"No asignado" }}</dd>
+                            <dt class="col-sm-5">Fecha de inicio</dt><dd class="col-sm-7">{{ obra.fecha_inicio|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-5">Culminación programada</dt><dd class="col-sm-7">{{ obra.fecha_fin_programada|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-5">Culminación vigente</dt><dd class="col-sm-7">{{ obra.fecha_fin_vigente|date:"d/m/Y" }}</dd>
+                            {% if obra.contratista %}
+                            <dt class="col-sm-5">Contratista</dt><dd class="col-sm-7">{{ obra.contratista }}{% if obra.contratista_ruc %} (RUC {{ obra.contratista_ruc }}){% endif %}</dd>
+                            {% endif %}
+                            <dt class="col-sm-5">Descripción</dt><dd class="col-sm-7">{{ obra.descripcion|default:"-" }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <strong>Expediente técnico</strong>
+                        {% if request.user.rol == 'ADMIN' %}
+                        <a href="{% url 'obras:expediente' obra.pk %}" class="btn btn-sm btn-outline-primary">{% if expediente %}Editar{% else %}Registrar{% endif %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if expediente %}
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5">N° de expediente</dt><dd class="col-sm-7">{{ expediente.numero_expediente }}</dd>
+                            <dt class="col-sm-5">Entidad formuladora</dt><dd class="col-sm-7">{{ expediente.entidad_formuladora|default:"-" }}</dd>
+                            <dt class="col-sm-5">Fecha de aprobación</dt><dd class="col-sm-7">{{ expediente.fecha_aprobacion|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-5">Monto del expediente</dt><dd class="col-sm-7">{{ expediente.monto_expediente|moneda }}</dd>
+                            {% if expediente.archivo %}
+                            <dt class="col-sm-5">Archivo</dt><dd class="col-sm-7"><a href="{{ expediente.archivo.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ver documento</a></dd>
+                            {% endif %}
+                        </dl>
+                        {% else %}
+                        <p class="text-muted mb-0">Esta obra aún no tiene un expediente técnico vinculado.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <strong>Datos para INFOBRAS</strong>
+                        {% if request.user.rol == 'ADMIN' %}
+                        <a href="{% url 'obras:ficha_infobras' obra.pk %}" class="btn btn-sm btn-outline-primary">{% if ficha_infobras %}Editar{% else %}Registrar{% endif %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if ficha_infobras %}
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-5">Naturaleza</dt><dd class="col-sm-7">{{ ficha_infobras.get_naturaleza_display|default:"-" }}</dd>
+                            <dt class="col-sm-5">N.° de contrato</dt><dd class="col-sm-7">{{ ficha_infobras.contrato_numero|default:"-" }}</dd>
+                            <dt class="col-sm-5">Entrega de terreno</dt><dd class="col-sm-7">{{ ficha_infobras.fecha_entrega_terreno|date:"d/m/Y"|default:"-" }}</dd>
+                            <dt class="col-sm-5">Recepción</dt><dd class="col-sm-7">{{ ficha_infobras.recepcion_fecha|date:"d/m/Y"|default:"-" }}</dd>
+                            <dt class="col-sm-5">Liquidación</dt><dd class="col-sm-7">{{ ficha_infobras.liquidacion_fecha|date:"d/m/Y"|default:"-" }}</dd>
+                            <dt class="col-sm-5">Paralizaciones</dt><dd class="col-sm-7">{{ paralizaciones|length }}</dd>
+                        </dl>
+                        {% else %}
+                        <p class="text-muted mb-0">Aún no se registran los datos adicionales que exige INFOBRAS.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="avances">
+        <div class="d-flex justify-content-between mb-2">
+            <h6>Registro de avance físico y financiero</h6>
+            {% if request.user.rol == 'RESIDENTE' %}
+            <a href="{% url 'avances:crear' obra.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Registrar avance</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover bg-white">
+                <thead class="table-light"><tr><th>Periodo</th><th>Av. físico prog./ejec.</th><th>Av. financiero prog./ejec.</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                {% for a in avances %}
+                    <tr>
+                        <td>{{ a.periodo|date:"M Y" }}</td>
+                        <td>{{ a.avance_fisico_programado_acum }}% / {{ a.avance_fisico_ejecutado_acum }}%</td>
+                        <td>{{ a.avance_financiero_programado_acum }}% / {{ a.avance_financiero_ejecutado_acum }}%</td>
+                        <td><span class="badge badge-semaforo-{{ a.estado_semaforo }}">{{ a.get_estado_semaforo_display }}</span></td>
+                        <td><a href="{% url 'avances:detalle' a.pk %}" class="btn btn-sm btn-outline-secondary">Ver</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">Aún no se han registrado avances.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'avances:lista' obra.pk %}" class="small">Ver historial completo &raquo;</a>
+    </div>
+
+    <div class="tab-pane fade" id="valorizaciones">
+        <div class="d-flex justify-content-between mb-2">
+            <h6>Valorizaciones mensuales</h6>
+            {% if request.user.rol == 'RESIDENTE' %}
+            <a href="{% url 'valorizaciones:crear' obra.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Nueva valorización</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover bg-white">
+                <thead class="table-light"><tr><th>N°</th><th>Periodo</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                {% for v in valorizaciones %}
+                    <tr>
+                        <td>{{ v.numero }}</td>
+                        <td>{{ v.periodo|date:"M Y" }}</td>
+                        <td>{{ v.monto|moneda }}</td>
+                        <td><span class="badge {% if v.estado == 'APROBADA' %}bg-success{% elif v.estado == 'OBSERVADA' %}bg-danger{% else %}bg-warning text-dark{% endif %}" {% if v.observaciones_revision %}title="{{ v.observaciones_revision }}"{% endif %}>{{ v.get_estado_display }}</span></td>
+                        <td>
+                            <a href="{% url 'valorizaciones:pdf' v.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i></a>
+                            {% if v.pendiente and request.user.rol == 'SUPERVISOR' %}
+                        <a href="{% url 'valorizaciones:revisar' v.pk %}" class="btn btn-sm btn-outline-primary">Revisar</a>
+                        {% elif v.observada and request.user.rol == 'RESIDENTE' %}
+                        <a href="{% url 'valorizaciones:subsanar' v.pk %}" class="btn btn-sm btn-outline-warning">Corregir</a>
+                        {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">Aún no se han registrado valorizaciones.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'valorizaciones:lista' obra.pk %}" class="small">Ver todas &raquo;</a>
+    </div>
+
+    <div class="tab-pane fade" id="informes">
+        <div class="d-flex justify-content-between mb-2">
+            <h6>Informes mensuales</h6>
+            {% if request.user.rol == 'RESIDENTE' or request.user.rol == 'SUPERVISOR' %}
+            <a href="{% url 'valorizaciones:informe_crear' obra.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Nuevo informe</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover bg-white">
+                <thead class="table-light"><tr><th>Periodo</th><th>Tipo</th><th>Elaborado por</th><th></th></tr></thead>
+                <tbody>
+                {% for i in informes %}
+                    <tr>
+                        <td>{{ i.periodo|date:"M Y" }}</td>
+                        <td>{{ i.get_tipo_display }}</td>
+                        <td>{{ i.elaborado_por.get_full_name }}</td>
+                        <td><a href="{% url 'valorizaciones:informe_detalle' i.pk %}" class="btn btn-sm btn-outline-secondary">Ver</a> <a href="{% url 'valorizaciones:informe_pdf' i.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">Aún no se han generado informes.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'valorizaciones:informes' obra.pk %}" class="small">Ver todos &raquo;</a>
+    </div>
+
+    <div class="tab-pane fade" id="calendario">
+        <div class="d-flex justify-content-between mb-2">
+            <h6>Calendario de ejecución valorizado</h6>
+            {% if request.user.rol == 'ADMIN' %}
+            <a href="{% url 'calendario:crear' obra.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Agregar periodo</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover bg-white">
+                <thead class="table-light"><tr><th>Periodo</th><th>Meta programada</th><th>Monto programado</th><th>Av. físico prog.</th></tr></thead>
+                <tbody>
+                {% for c in calendario %}
+                    <tr><td>{{ c.periodo|date:"M Y" }}</td><td>{{ c.meta_programada }}</td><td>{{ c.monto_programado|moneda }}</td><td>{{ c.avance_fisico_programado }}%</td></tr>
+                {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">Sin periodos registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'calendario:lista' obra.pk %}" class="small">Ver calendario completo &raquo;</a>
+    </div>
+
+    <div class="tab-pane fade" id="modificaciones">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between mb-2">
+                    <h6>Ampliaciones de plazo</h6>
+                    {% if request.user.rol == 'ADMIN' %}
+                    <a href="{% url 'calendario:ampliacion_crear' obra.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i></a>
+                    {% endif %}
+                </div>
+                <ul class="list-group small">
+                {% for a in ampliaciones %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>N° {{ a.numero }} - {% if a.estado == 'APROBADA' %}{{ a.dias_otorgados }} días otorgados{% else %}{{ a.dias_solicitados }} días solicitados{% endif %}</span>
+                        <span>{% if a.pendiente and request.user.rol == 'ADMIN' %}<a href="{% url 'calendario:ampliacion_resolver' obra.pk a.pk %}" class="btn btn-sm btn-link p-0 me-1">Resolver</a>{% endif %}<span class="badge {% if a.estado == 'APROBADA' %}bg-success{% elif a.estado == 'RECHAZADA' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ a.get_estado_display }}</span></span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Sin ampliaciones registradas.</li>
+                {% endfor %}
+                </ul>
+                <a href="{% url 'calendario:ampliaciones' obra.pk %}" class="small">Ver todas &raquo;</a>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between mb-2">
+                    <h6>Adicionales y deductivos</h6>
+                    {% if request.user.rol == 'ADMIN' %}
+                    <a href="{% url 'calendario:adicional_crear' obra.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i></a>
+                    {% endif %}
+                </div>
+                <ul class="list-group small">
+                {% for ad in adicionales %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>{{ ad.get_tipo_display }} N° {{ ad.numero }} - {{ ad.monto|moneda }}</span>
+                        <span>{% if ad.pendiente and request.user.rol == 'ADMIN' %}<a href="{% url 'calendario:adicional_resolver' obra.pk ad.pk %}" class="btn btn-sm btn-link p-0 me-1">Resolver</a>{% endif %}<span class="badge {% if ad.estado == 'APROBADO' %}bg-success{% elif ad.estado == 'RECHAZADO' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ ad.get_estado_display }}</span></span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Sin registros.</li>
+                {% endfor %}
+                </ul>
+                <a href="{% url 'calendario:adicionales' obra.pk %}" class="small">Ver todos &raquo;</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="documentos">
+        <div class="d-flex justify-content-between mb-2">
+            <h6>Acervo documentario</h6>
+            {% if request.user.rol == 'ADMIN' or request.user.rol == 'APOYO' %}
+            <a href="{% url 'documentos:crear' obra.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Cargar documento</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover bg-white">
+                <thead class="table-light"><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th></th></tr></thead>
+                <tbody>
+                {% for d in documentos %}
+                    <tr>
+                        <td>{{ d.nombre }}</td>
+                        <td>{{ d.tipo_documento }}</td>
+                        <td>{{ d.fecha_carga|date:"d/m/Y" }}</td>
+                        <td><a href="{{ d.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">Sin documentos cargados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'documentos:lista' obra.pk %}" class="small">Ver acervo completo &raquo;</a>
+    </div>
+
+</div>
+{% endblock %}

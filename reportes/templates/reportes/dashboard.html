@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load core_extras static %}
+{% block titulo %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container { position: relative; height: 300px; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard dinámico</h4>
+    <div class="d-flex gap-2">
+        <a id="btnPdf" href="{% url 'reportes:consolidado_pdf' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+        <a id="btnExcel" href="{% url 'reportes:consolidado_excel' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel / INFOBRAS</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" id="formFiltros" class="row g-2 align-items-end"
+              data-url-datos="{% url 'reportes:dashboard_data' %}" data-url-firma="{% url 'reportes:dashboard_firma' %}"
+              data-url-pdf="{% url 'reportes:consolidado_pdf' %}" data-url-excel="{% url 'reportes:consolidado_excel' %}">
+            <div class="col-md-3">
+                <label class="form-label small">Obra</label>
+                <select name="obra" id="filtroObra" class="form-select">
+                    <option value="">Todas las obras</option>
+                    {% for o in obras %}
+                    <option value="{{ o.pk }}" {% if obra_actual == o.pk|stringformat:"s" %}selected{% endif %}>{{ o.codigo }} - {{ o.nombre|truncatechars:40 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Estado</label>
+                <select name="estado" id="filtroEstado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for valor, etiqueta in estados %}
+                    <option value="{{ valor }}" {% if valor == estado_actual %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Unidad orgánica</label>
+                <select name="unidad" id="filtroUnidad" class="form-select">
+                    <option value="">Todas</option>
+                    {% for u in unidades %}<option value="{{ u }}" {% if u == unidad_actual %}selected{% endif %}>{{ u }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Periodo (situación al mes)</label>
+                <input type="month" name="periodo" id="filtroPeriodo" value="{{ periodo_actual }}" class="form-control" placeholder="AAAA-MM">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Total de obras</div>
+            <div class="valor" id="kpiTotal">{{ datos.total_obras }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Avance físico promedio</div>
+            <div class="valor" id="kpiFisico">{{ datos.promedio_fisico_ejecutado }}%</div>
+            <div class="small text-muted">Programado: <span id="kpiFisicoProg">{{ datos.promedio_fisico_programado }}</span>%</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi"><div class="card-body">
+            <div class="text-muted small">Avance financiero promedio</div>
+            <div class="valor" id="kpiFinanciero">{{ datos.promedio_financiero_ejecutado }}%</div>
+            <div class="small text-muted">Programado: <span id="kpiFinancieroProg">{{ datos.promedio_financiero_programado }}</span>%</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card card-kpi riesgo"><div class="card-body">
+            <div class="text-muted small">Obras en riesgo / atrasadas</div>
+            <div class="valor" id="kpiRiesgo">{{ datos.total_en_riesgo }}</div>
+            <div class="small text-muted">Umbral: {{ datos.umbral_riesgo }}% / {{ datos.umbral_atraso }}%</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body text-center">
+            <div class="small text-muted">En ejecución</div>
+            <div class="fs-4 fw-bold text-primary" id="estadoEjecucion">{{ datos.conteo_estados.EN_EJECUCION }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body text-center">
+            <div class="small text-muted">Paralizadas</div>
+            <div class="fs-4 fw-bold text-warning" id="estadoParalizada">{{ datos.conteo_estados.PARALIZADA }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body text-center">
+            <div class="small text-muted">Concluidas</div>
+            <div class="fs-4 fw-bold text-success" id="estadoConcluida">{{ datos.conteo_estados.CONCLUIDA }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body text-center">
+            <div class="small text-muted">Con retraso</div>
+            <div class="fs-4 fw-bold text-danger" id="estadoRetraso">{{ datos.conteo_estados.CON_RETRASO }}</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white"><strong>Avance físico y financiero por obra (programado vs. ejecutado)</strong>
+                <div class="small text-muted">El color del avance físico ejecutado indica el semáforo: verde a tiempo, amarillo en riesgo, rojo atrasada. Con muchas obras, deslice el gráfico hacia los lados.</div></div>
+            <div class="card-body overflow-auto"><div class="chart-container"><canvas id="graficoAvance"></canvas></div></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white"><strong>Distribución por estado</strong></div>
+            <div class="card-body"><div class="chart-container"><canvas id="graficoEstados"></canvas></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-white"><strong>Evolución del avance físico y financiero en el tiempo (programado vs. ejecutado)</strong></div>
+    <div class="card-body"><div class="chart-container"><canvas id="graficoEvolucion"></canvas></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-exclamation-triangle text-warning"></i> Obras en riesgo o atrasadas</strong>
+        <span class="small text-muted" id="ultimaActualizacion"></span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="tablaRiesgo">
+            <thead class="table-light"><tr><th>Código</th><th>Nombre</th><th>Estado</th><th>Avance físico</th><th>Desviación</th><th>Semáforo</th><th></th></tr></thead>
+            <tbody>
+            {% for o in datos.obras_en_riesgo %}
+                <tr>
+                    <td>{{ o.codigo }}</td>
+                    <td>{{ o.nombre|truncatechars:50 }}</td>
+                    <td>{{ o.estado }}</td>
+                    <td>{{ o.avance_fisico }}%</td>
+                    <td>{{ o.desviacion }} pp</td>
+                    <td><span class="badge badge-semaforo-{{ o.semaforo }}">{{ o.semaforo_display }}</span></td>
+                    <td><a href="{% url 'obras:detalle' o.id %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No hay obras en riesgo con los filtros actuales.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+{{ datos.graficos|json_script:"datos-graficos-iniciales" }}
+{{ datos.firma|json_script:"firma-inicial" }}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

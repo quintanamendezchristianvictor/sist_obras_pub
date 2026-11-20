@@ -1,0 +1,33 @@
+# Entorno virtual
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Configuración local
+.env
+
+# Archivos generados por Django
+/staticfiles/
+*.log
+
+# Archivos subidos por los usuarios (evidencias, documentos). Se excluyen del
+# control de versiones pero SÍ se incluyen en el paquete de entrega inicial
+# para que el sistema muestre datos de ejemplo apenas se instale.
+media/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.sqlite3
+
+# Copias de respaldo de la base de datos (RNF-18)
+backups/
+
+# Registro de errores
+logs/
+
+
+# Volcados SQL de la base de datos (se entregan en el paquete de despliegue)
+database/
+.ruff_cache/

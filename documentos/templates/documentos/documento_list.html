@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block titulo %}Acervo documentario{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-folder2-open"></i> Acervo documentario{% if obra %} - {{ obra.codigo }}{% endif %}</h4>
+    {% if obra %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'obras:detalle' obra.pk %}" class="btn btn-outline-secondary">&laquo; Volver a la obra</a>
+        {% if request.user.rol == 'ADMIN' or request.user.rol == 'APOYO' %}
+        <a href="{% url 'documentos:crear' obra.pk %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Cargar documento</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            {% if not obra %}
+            <div class="col-md-3">
+                <label class="form-label small">Obra</label>
+                <select name="obra" class="form-select">
+                    <option value="">Todas las obras</option>
+                    {% for o in obras %}
+                    <option value="{{ o.pk }}" {% if obra_actual == o.pk|stringformat:"s" %}selected{% endif %}>{{ o.codigo }} - {{ o.nombre|truncatechars:35 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-md-{% if obra %}4{% else %}3{% endif %}">
+                <label class="form-label small">Buscar por nombre o descripción</label>
+                <input type="text" name="q" value="{{ q }}" class="form-control">
+            </div>
+            <div class="col-md-{% if obra %}3{% else %}2{% endif %}">
+                <label class="form-label small">Tipo de documento</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for t in tipos %}
+                    <option value="{{ t.pk }}" {% if tipo_actual == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-{% if obra %}3{% else %}2{% endif %}">
+                <label class="form-label small">Periodo</label>
+                <input type="month" name="periodo" value="{{ periodo_actual }}" class="form-control" placeholder="AAAA-MM">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr>{% if not obra %}<th>Obra</th>{% endif %}<th>Nombre</th><th>Tipo</th><th>Periodo</th><th>Cargado por</th><th>Fecha</th><th></th></tr></thead>
+            <tbody>
+            {% for d in documentos %}
+                <tr>
+                    {% if not obra %}<td><a href="{% url 'obras:detalle' d.obra_id %}">{{ d.obra.codigo }}</a></td>{% endif %}
+                    <td>{{ d.nombre }}</td>
+                    <td>{{ d.tipo_documento }}</td>
+                    <td>{{ d.periodo|date:"M Y"|default:"-" }}</td>
+                    <td>{{ d.subido_por.get_full_name|default:"-" }}</td>
+                    <td>{{ d.fecha_carga|date:"d/m/Y" }}</td>
+                    <td><a href="{{ d.archivo.url }}" download class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> {{ d.extension }}</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No se encontraron documentos con los criterios indicados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/paginacion.html" %}
+{% endblock %}

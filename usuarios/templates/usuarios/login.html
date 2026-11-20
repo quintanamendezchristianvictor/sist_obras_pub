@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block titulo %}Iniciar sesión{% endblock %}
+
+{% block errores_form %}{% endblock %}
+{% block contenido %}
+<div class="login-wrapper">
+    <div class="card login-card shadow-lg">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+                <img src="{% static 'img/logo-app.svg' %}" alt="Logo del sistema" class="login-logo">
+                <h4 class="mt-3 mb-0">Sistema de Control y Seguimiento de Obras Públicas</h4>
+                <small class="text-muted">Municipalidad Distrital de Santa Rosa - Ayacucho</small>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Usuario</label>
+                    {{ form.username }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    {{ form.password }}
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                </button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{% url 'usuarios:password_reset' %}" class="small">¿Olvidó su contraseña?</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

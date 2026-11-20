@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}Bitácora del sistema{% endblock %}
+{% block contenido %}
+<h4 class="mb-3"><i class="bi bi-clock-history"></i> Bitácora de operaciones (RNF-16)</h4>
+<p class="text-muted small">Registro de trazabilidad de las operaciones críticas (creación, actualización y eliminación de información) realizadas por los usuarios del sistema.</p>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small">Usuario</label>
+                <select name="usuario" class="form-select">
+                    <option value="">Todos</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.pk }}" {% if usuario_actual == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Acción</label>
+                <select name="accion" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="CREAR/ACTUALIZAR" {% if accion_actual == "CREAR/ACTUALIZAR" %}selected{% endif %}>Crear / Actualizar</option>
+                    <option value="ELIMINAR" {% if accion_actual == "ELIMINAR" %}selected{% endif %}>Eliminar</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha y hora</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Módulo</th>
+                    <th>Ruta</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in registros %}
+                <tr>
+                    <td>{{ r.fecha|date:"d/m/Y H:i:s" }}</td>
+                    <td>{{ r.usuario.get_full_name|default:"-" }}</td>
+                    <td><span class="badge bg-secondary">{{ r.accion }}</span></td>
+                    <td>{{ r.modulo }}</td>
+                    <td class="small text-muted">{{ r.ruta }}</td>
+                    <td>{{ r.direccion_ip|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Sin registros en la bitácora.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/paginacion.html" %}
+{% endblock %}

@@ -1,0 +1,69 @@
+erDiagram
+    calendario_calendarioejecucion {
+        bigint id PK
+        bigint obra_id FK, UK
+        date periodo UK
+        varchar_255 meta_programada
+        decimal_14_2 monto_programado
+        decimal_5_2 avance_fisico_programado
+        varchar_255 observaciones
+    }
+    calendario_ampliacionplazo {
+        bigint id PK
+        bigint obra_id FK, UK
+        integer numero UK
+        date fecha_solicitud
+        longtext motivo
+        integer dias_solicitados
+        integer dias_otorgados
+        varchar_12 estado
+        date fecha_aprobacion
+        varchar_100 resolucion
+        varchar documento_sustento
+        bigint registrado_por_id FK
+        datetime fecha_registro
+    }
+    calendario_adicionaldeductivo {
+        bigint id PK
+        bigint obra_id FK, UK
+        varchar_10 tipo UK
+        integer numero UK
+        decimal_14_2 monto
+        longtext sustento
+        varchar_12 estado
+        date fecha_solicitud
+        date fecha_aprobacion
+        varchar_100 resolucion
+        varchar documento_sustento
+        bigint registrado_por_id FK
+        datetime fecha_registro
+    }
+    documentos_tipodocumento {
+        bigint id PK
+        varchar_100 nombre UK
+    }
+    documentos_documento {
+        bigint id PK
+        bigint obra_id FK
+        bigint tipo_documento_id FK
+        varchar_255 nombre
+        date periodo
+        longtext descripcion
+        varchar archivo
+        bigint subido_por_id FK
+        datetime fecha_carga
+    }
+    obras_obra {
+        bigint id PK
+    }
+    usuarios_usuario {
+        bigint id PK
+    }
+    obras_obra ||--o{ calendario_calendarioejecucion : "obra"
+    obras_obra ||--o{ calendario_ampliacionplazo : "obra"
+    usuarios_usuario |o--o{ calendario_ampliacionplazo : "registrado_por"
+    obras_obra ||--o{ calendario_adicionaldeductivo : "obra"
+    usuarios_usuario |o--o{ calendario_adicionaldeductivo : "registrado_por"
+    obras_obra ||--o{ documentos_documento : "obra"
+    documentos_tipodocumento ||--o{ documentos_documento : "tipo_documento"
+    usuarios_usuario |o--o{ documentos_documento : "subido_por"

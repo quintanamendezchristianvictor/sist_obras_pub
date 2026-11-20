@@ -1,0 +1,17 @@
+# Estándar de codificación del proyecto (RNF-22). Verificación: ruff check .
+[tool.ruff]
+line-length = 160
+extend-exclude = ["venv", "migrations", "staticfiles", "media"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ"]
+ignore = [
+    "DJ001",  # los campos de texto opcionales usan blank=True sin null, salvo archivos heredados
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["avances", "calendario", "config", "core", "documentos", "obras", "reportes", "usuarios", "valorizaciones"]
+
+[tool.coverage.run]
+source = ["."]
+omit = ["venv/*", "*/migrations/*", "manage.py", "config/asgi.py", "config/wsgi.py", "*/tests.py", "core/management/commands/seed_data.py"]

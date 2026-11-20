@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Ampliaciones de plazo{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-hourglass-split"></i> Ampliaciones de plazo - {{ obra.codigo }}</h4>
+    <div class="d-flex gap-2">
+        <a href="{% url 'obras:detalle' obra.pk %}" class="btn btn-outline-secondary">&laquo; Volver a la obra</a>
+        {% if request.user.rol == 'ADMIN' %}
+        <a href="{% url 'calendario:ampliacion_crear' obra.pk %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Nueva ampliación</a>
+        {% endif %}
+    </div>
+</div>
+<div class="alert alert-light border small">Plazo original: <strong>{{ obra.plazo_ejecucion_dias }} días</strong> &middot; Plazo vigente: <strong>{{ obra.plazo_vigente_dias }} días</strong> &middot; Culminación vigente: <strong>{{ obra.fecha_fin_vigente|date:"d/m/Y" }}</strong></div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>N°</th><th>Fecha solicitud</th><th>Motivo</th><th>Días solicitados</th><th>Días otorgados</th><th>Estado</th><th>Resolución</th><th></th></tr></thead>
+            <tbody>
+            {% for a in ampliaciones %}
+                <tr>
+                    <td>{{ a.numero }}</td>
+                    <td>{{ a.fecha_solicitud|date:"d/m/Y" }}</td>
+                    <td>{{ a.motivo|truncatechars:60 }}</td>
+                    <td>{{ a.dias_solicitados }}</td>
+                    <td>{% if a.estado == 'APROBADA' %}{{ a.dias_otorgados }}{% else %}-{% endif %}</td>
+                    <td><span class="badge {% if a.estado == 'APROBADA' %}bg-success{% elif a.estado == 'RECHAZADA' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ a.get_estado_display }}</span></td>
+                    <td class="small">{{ a.resolucion|default:"-" }}{% if a.fecha_aprobacion %}<br><span class="text-muted">{{ a.fecha_aprobacion|date:"d/m/Y" }}</span>{% endif %}</td>
+                    <td>{% if a.pendiente and request.user.rol == 'ADMIN' %}<a href="{% url 'calendario:ampliacion_resolver' obra.pk a.pk %}" class="btn btn-sm btn-outline-primary">Resolver</a>{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Sin ampliaciones de plazo registradas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

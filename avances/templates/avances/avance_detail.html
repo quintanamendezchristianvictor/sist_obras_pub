@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block titulo %}Avance {{ avance.periodo|date:"M Y" }}{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-graph-up"></i> Avance {{ avance.obra.codigo }} - {{ avance.periodo|date:"F Y" }}</h4>
+    <div class="d-flex gap-2">
+        {% if es_ultimo and request.user.rol == 'RESIDENTE' %}
+        <a href="{% url 'avances:editar' avance.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Corregir</a>
+        {% endif %}
+        <a href="{% url 'avances:lista' avance.obra.pk %}" class="btn btn-outline-secondary">&laquo; Volver al historial</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="card card-kpi"><div class="card-body"><div class="small text-muted">Av. físico ejecutado</div><div class="valor">{{ avance.avance_fisico_ejecutado_acum }}%</div></div></div></div>
+    <div class="col-md-3"><div class="card card-kpi"><div class="card-body"><div class="small text-muted">Av. físico programado</div><div class="valor">{{ avance.avance_fisico_programado_acum }}%</div></div></div></div>
+    <div class="col-md-3"><div class="card card-kpi"><div class="card-body"><div class="small text-muted">Av. financiero ejecutado</div><div class="valor">{{ avance.avance_financiero_ejecutado_acum }}%</div></div></div></div>
+    <div class="col-md-3"><div class="card card-kpi"><div class="card-body"><div class="small text-muted">Estado</div><div class="valor"><span class="badge badge-semaforo-{{ avance.estado_semaforo }}">{{ avance.get_estado_semaforo_display }}</span></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="card"><div class="card-body small">
+        <div class="text-muted">Av. financiero programado</div><div class="fs-5 fw-bold">{{ avance.avance_financiero_programado_acum }}%</div>
+    </div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body small">
+        <div class="text-muted">Monto devengado acumulado</div><div class="fs-5 fw-bold">{{ avance.monto_devengado_acum|moneda }}</div>
+    </div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body small">
+        <div class="text-muted">Desviación física (programado - ejecutado)</div><div class="fs-5 fw-bold">{{ avance.desviacion_fisica|floatformat:2 }} pp</div>
+    </div></div></div>
+</div>
+
+{% if metrados %}
+<div class="card mb-3">
+    <div class="card-header bg-white"><strong>Metrados ejecutados acumulados</strong></div>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead class="table-light"><tr><th>Ítem</th><th>Partida</th><th>Programado</th><th>Ejecutado acum.</th></tr></thead>
+            <tbody>
+            {% for m in metrados %}
+                <tr><td>{{ m.partida.item }}</td><td>{{ m.partida.descripcion }}</td><td>{{ m.partida.metrado }} {{ m.partida.unidad }}</td><td>{{ m.metrado_acumulado }} {{ m.partida.unidad }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+    <div class="card-header bg-white"><strong>Observaciones del periodo</strong></div>
+    <div class="card-body">{{ avance.observaciones|default:"Sin observaciones registradas."|linebreaks }}</div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-camera"></i> Evidencia fotográfica (cuaderno de obra digital)</strong>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            {% for e in evidencias %}
+            <div class="col-md-3 col-6">
+                <div class="card h-100">
+                    <img src="{{ e.imagen.url }}" class="card-img-top" style="height:140px;object-fit:cover;" loading="lazy" alt="{{ e.descripcion }}">
+                    <div class="card-body p-2">
+                        <p class="small mb-0">{{ e.descripcion|default:"Sin descripción" }}</p>
+                        <p class="small text-muted mb-0">{{ e.fecha|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><p class="text-muted">Aún no se han cargado evidencias para este avance.</p></div>
+            {% endfor %}
+        </div>
+
+        {% if request.user.rol == 'RESIDENTE' %}
+        <form method="post" action="{% url 'avances:evidencia_crear' avance.pk %}" enctype="multipart/form-data" class="row g-2">
+            {% csrf_token %}
+            <div class="col-md-6">{{ form_evidencia.imagen }}</div>
+            <div class="col-md-4">{{ form_evidencia.descripcion }}</div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-upload"></i> Subir</button></div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

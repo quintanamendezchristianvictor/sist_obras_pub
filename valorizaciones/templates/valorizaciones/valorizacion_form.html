@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}{% if object %}Corregir valorización{% else %}Nueva valorización{% endif %}{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-cash-stack"></i> {% if object %}Corregir valorización N° {{ object.numero }}{% else %}Nueva valorización{% endif %} - {{ obra.codigo }}</h5></div>
+            <div class="card-body">
+                {% if object.observaciones_revision %}
+                <div class="alert alert-warning small"><strong>Observaciones del supervisor:</strong><br>{{ object.observaciones_revision|linebreaksbr }}</div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" data-confirmar="¿Confirma el envío de la valorización para la revisión del supervisor?">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">N° de valorización *</label>{{ form.numero }}</div>
+                        <div class="col-md-4"><label class="form-label">Periodo *</label>{{ form.periodo }}</div>
+                        <div class="col-md-4"><label class="form-label">Monto (S/) *</label>{{ form.monto }}</div>
+                        <div class="col-md-6"><label class="form-label">Fecha de presentación *</label>{{ form.fecha_presentacion }}</div>
+                        <div class="col-md-6"><label class="form-label">Documento de sustento (PDF)</label>{{ form.archivo_pdf }}</div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> {% if object %}Enviar corrección{% else %}Registrar{% endif %}</button>
+                        <a href="{% url 'valorizaciones:lista' obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

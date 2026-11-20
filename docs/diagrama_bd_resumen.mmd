@@ -1,0 +1,107 @@
+erDiagram
+    usuarios_usuario {
+        bigint id PK
+    }
+    core_bitacora {
+        bigint id PK
+        bigint usuario_id FK
+    }
+    core_configuracion {
+        bigint id PK
+    }
+    obras_obra {
+        bigint id PK
+        bigint residente_id FK
+        bigint supervisor_id FK
+        bigint creado_por_id FK
+    }
+    obras_expedientetecnico {
+        bigint id PK
+        bigint obra_id FK, UK
+    }
+    obras_partidaexpediente {
+        bigint id PK
+        bigint expediente_id FK, UK
+    }
+    obras_fichainfobras {
+        bigint id PK
+        bigint obra_id FK, UK
+    }
+    obras_paralizacionobra {
+        bigint id PK
+        bigint obra_id FK
+    }
+    avances_avanceobra {
+        bigint id PK
+        bigint obra_id FK, UK
+        bigint registrado_por_id FK
+    }
+    avances_metradoejecutado {
+        bigint id PK
+        bigint avance_id FK, UK
+        bigint partida_id FK, UK
+    }
+    avances_evidenciaavance {
+        bigint id PK
+        bigint avance_id FK
+    }
+    valorizaciones_valorizacion {
+        bigint id PK
+        bigint obra_id FK, UK
+        bigint registrado_por_id FK
+        bigint revisado_por_id FK
+    }
+    valorizaciones_informemensual {
+        bigint id PK
+        bigint obra_id FK
+        bigint elaborado_por_id FK
+    }
+    calendario_calendarioejecucion {
+        bigint id PK
+        bigint obra_id FK, UK
+    }
+    calendario_ampliacionplazo {
+        bigint id PK
+        bigint obra_id FK, UK
+        bigint registrado_por_id FK
+    }
+    calendario_adicionaldeductivo {
+        bigint id PK
+        bigint obra_id FK, UK
+        bigint registrado_por_id FK
+    }
+    documentos_tipodocumento {
+        bigint id PK
+    }
+    documentos_documento {
+        bigint id PK
+        bigint obra_id FK
+        bigint tipo_documento_id FK
+        bigint subido_por_id FK
+    }
+    usuarios_usuario |o--o{ core_bitacora : "usuario"
+    usuarios_usuario |o--o{ obras_obra : "residente"
+    usuarios_usuario |o--o{ obras_obra : "supervisor"
+    usuarios_usuario |o--o{ obras_obra : "creado_por"
+    obras_obra ||--o| obras_expedientetecnico : "obra"
+    obras_expedientetecnico ||--o{ obras_partidaexpediente : "expediente"
+    obras_obra ||--o| obras_fichainfobras : "obra"
+    obras_obra ||--o{ obras_paralizacionobra : "obra"
+    obras_obra ||--o{ avances_avanceobra : "obra"
+    usuarios_usuario |o--o{ avances_avanceobra : "registrado_por"
+    avances_avanceobra ||--o{ avances_metradoejecutado : "avance"
+    obras_partidaexpediente ||--o{ avances_metradoejecutado : "partida"
+    avances_avanceobra ||--o{ avances_evidenciaavance : "avance"
+    obras_obra ||--o{ valorizaciones_valorizacion : "obra"
+    usuarios_usuario |o--o{ valorizaciones_valorizacion : "registrado_por"
+    usuarios_usuario |o--o{ valorizaciones_valorizacion : "revisado_por"
+    obras_obra ||--o{ valorizaciones_informemensual : "obra"
+    usuarios_usuario |o--o{ valorizaciones_informemensual : "elaborado_por"
+    obras_obra ||--o{ calendario_calendarioejecucion : "obra"
+    obras_obra ||--o{ calendario_ampliacionplazo : "obra"
+    usuarios_usuario |o--o{ calendario_ampliacionplazo : "registrado_por"
+    obras_obra ||--o{ calendario_adicionaldeductivo : "obra"
+    usuarios_usuario |o--o{ calendario_adicionaldeductivo : "registrado_por"
+    obras_obra ||--o{ documentos_documento : "obra"
+    documentos_tipodocumento ||--o{ documentos_documento : "tipo_documento"
+    usuarios_usuario |o--o{ documentos_documento : "subido_por"

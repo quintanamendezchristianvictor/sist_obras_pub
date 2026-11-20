@@ -1,0 +1,71 @@
+erDiagram
+    avances_avanceobra {
+        bigint id PK
+        bigint obra_id FK, UK
+        date periodo UK
+        decimal_5_2 avance_fisico_programado_acum
+        decimal_5_2 avance_fisico_ejecutado_acum
+        decimal_5_2 avance_financiero_programado_acum
+        decimal_5_2 avance_financiero_ejecutado_acum
+        decimal_14_2 monto_devengado_acum
+        longtext observaciones
+        bigint registrado_por_id FK
+        datetime fecha_registro
+    }
+    avances_metradoejecutado {
+        bigint id PK
+        bigint avance_id FK, UK
+        bigint partida_id FK, UK
+        decimal_14_2 metrado_acumulado
+    }
+    avances_evidenciaavance {
+        bigint id PK
+        bigint avance_id FK
+        varchar imagen
+        varchar_255 descripcion
+        datetime fecha
+    }
+    valorizaciones_valorizacion {
+        bigint id PK
+        bigint obra_id FK, UK
+        integer numero UK
+        date periodo
+        decimal_14_2 monto
+        date fecha_presentacion
+        varchar_15 estado
+        longtext observaciones_revision
+        varchar archivo_pdf
+        bigint registrado_por_id FK
+        bigint revisado_por_id FK
+        datetime fecha_registro
+        datetime fecha_revision
+    }
+    valorizaciones_informemensual {
+        bigint id PK
+        bigint obra_id FK
+        date periodo
+        varchar_15 tipo
+        longtext resumen
+        varchar archivo
+        bigint elaborado_por_id FK
+        datetime fecha_elaboracion
+    }
+    obras_obra {
+        bigint id PK
+    }
+    usuarios_usuario {
+        bigint id PK
+    }
+    obras_partidaexpediente {
+        bigint id PK
+    }
+    obras_obra ||--o{ avances_avanceobra : "obra"
+    usuarios_usuario |o--o{ avances_avanceobra : "registrado_por"
+    avances_avanceobra ||--o{ avances_metradoejecutado : "avance"
+    obras_partidaexpediente ||--o{ avances_metradoejecutado : "partida"
+    avances_avanceobra ||--o{ avances_evidenciaavance : "avance"
+    obras_obra ||--o{ valorizaciones_valorizacion : "obra"
+    usuarios_usuario |o--o{ valorizaciones_valorizacion : "registrado_por"
+    usuarios_usuario |o--o{ valorizaciones_valorizacion : "revisado_por"
+    obras_obra ||--o{ valorizaciones_informemensual : "obra"
+    usuarios_usuario |o--o{ valorizaciones_informemensual : "elaborado_por"

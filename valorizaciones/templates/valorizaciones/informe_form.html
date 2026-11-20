@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Nuevo informe mensual{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-journal-text"></i> Nuevo informe mensual - {{ obra.codigo }}</h5></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Periodo *</label>{{ form.periodo }}</div>
+                        {% if form.tipo %}
+                        <div class="col-md-6"><label class="form-label">Tipo de informe *</label>{{ form.tipo }}</div>
+                        {% else %}
+                        <div class="col-md-6"><label class="form-label">Tipo de informe</label><input class="form-control" value="{{ form.instance.get_tipo_display }}" disabled></div>
+                        {% endif %}
+                        <div class="col-12">
+                            <p class="small text-muted mb-2"><i class="bi bi-info-circle"></i> El avance físico y financiero, las incidencias, las valorizaciones y las modificaciones contractuales del periodo se incorporan automáticamente al informe.</p>
+                            <label class="form-label">Evaluación y conclusiones del periodo *</label>{{ form.resumen }}
+                        </div>
+                        <div class="col-12"><label class="form-label">Archivo adjunto (opcional)</label>{{ form.archivo }}</div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Generar informe</button>
+                        <a href="{% url 'valorizaciones:informes' obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

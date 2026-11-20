@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar periodo{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-calendar-check"></i> {{ titulo|default:"Registrar periodo del calendario" }} - {{ obra.codigo }}</h5></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Periodo *</label>{{ form.periodo }}</div>
+                        <div class="col-md-6"><label class="form-label">Monto programado (S/) *</label>{{ form.monto_programado }}</div>
+                        <div class="col-md-6"><label class="form-label">Meta física programada</label>{{ form.meta_programada }}</div>
+                        <div class="col-md-6"><label class="form-label">Avance físico programado (%) *</label>{{ form.avance_fisico_programado }}</div>
+                        <div class="col-12"><label class="form-label">Observaciones</label>{{ form.observaciones }}</div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+                        <a href="{% url 'calendario:lista' obra.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

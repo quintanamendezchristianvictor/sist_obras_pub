@@ -1,0 +1,40 @@
+{% load core_extras %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4; margin: 2cm 1.5cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; color: #222; }
+    h1 { font-size: 14pt; text-align: center; color: #1f4e78; margin-bottom: 2px; }
+    h2 { font-size: 11pt; text-align: center; color: #555; margin-top: 0; font-weight: normal; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    td, th { border: 1px solid #ccc; padding: 6px 8px; font-size: 10pt; }
+    th { background-color: #1f4e78; color: #fff; text-align: left; }
+    .etiqueta { background-color: #f2f2f2; font-weight: bold; width: 35%; }
+    .pie { margin-top: 30px; font-size: 9pt; color: #777; text-align: center; }
+</style>
+</head>
+<body>
+    <h1>Valorización de Obra N° {{ valorizacion.numero }}</h1>
+    <h2>Sistema de Control y Seguimiento de Obras Públicas - Municipalidad Distrital de Santa Rosa, Ayacucho</h2>
+
+    <table>
+        <tr><td class="etiqueta">Obra</td><td>{{ obra.codigo }} - {{ obra.nombre }}</td></tr>
+        <tr><td class="etiqueta">Unidad orgánica</td><td>{{ obra.unidad_organica }}</td></tr>
+        <tr><td class="etiqueta">Residente de obra</td><td>{{ obra.residente.get_full_name|default:"-" }}</td></tr>
+        <tr><td class="etiqueta">Supervisor / Inspector</td><td>{{ obra.supervisor.get_full_name|default:"-" }}</td></tr>
+        <tr><td class="etiqueta">Periodo valorizado</td><td>{{ valorizacion.periodo|date:"F Y" }}</td></tr>
+        <tr><td class="etiqueta">Monto valorizado</td><td>{{ valorizacion.monto|moneda }}</td></tr>
+        <tr><td class="etiqueta">Fecha de presentación</td><td>{{ valorizacion.fecha_presentacion|date:"d/m/Y" }}</td></tr>
+        <tr><td class="etiqueta">Estado</td><td>{{ valorizacion.get_estado_display }}</td></tr>
+        <tr><td class="etiqueta">Registrado por</td><td>{{ valorizacion.registrado_por.get_full_name|default:"-" }}</td></tr>
+        {% if valorizacion.revisado_por %}
+        <tr><td class="etiqueta">Revisado por</td><td>{{ valorizacion.revisado_por.get_full_name }}</td></tr>
+        <tr><td class="etiqueta">Observaciones de revisión</td><td>{{ valorizacion.observaciones_revision|default:"-" }}</td></tr>
+        {% endif %}
+    </table>
+
+    <p class="pie">Documento generado automáticamente el {{ fecha_emision|date:"d/m/Y H:i" }} por el sistema web de control y seguimiento de obras públicas.</p>
+</body>
+</html>

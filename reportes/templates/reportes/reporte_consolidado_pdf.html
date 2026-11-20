@@ -1,0 +1,56 @@
+{% load core_extras %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4 landscape; margin: 1.5cm 1cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; color: #222; }
+    h1 { font-size: 13pt; text-align: center; color: #1f4e78; margin-bottom: 2px; }
+    h2 { font-size: 10pt; text-align: center; color: #555; margin-top: 0; font-weight: normal; }
+    table { width: 100%; margin-top: 12px; }
+    td, th { border: 1px solid #ccc; padding: 3px; }
+    th { background-color: #1f4e78; color: #fff; }
+    .pie { margin-top: 20px; font-size: 8pt; color: #777; text-align: center; }
+</style>
+</head>
+<body>
+    <h1>Reporte Consolidado de Avance de Obras Públicas</h1>
+    <h2>Municipalidad Distrital de Santa Rosa - Ayacucho &middot; {% if periodo %}Situación al periodo {{ periodo|date:"m/Y" }} &middot; {% endif %}Emitido el {{ fecha_emision|date:"d/m/Y H:i" }} por {{ usuario.get_full_name }}</h2>
+
+    {% spaceless %}
+    <table repeat="1">
+        <thead>
+            <tr>
+                <th>Código</th><th>Nombre de la obra</th><th>Estado</th>
+                <th>Av. físico prog.</th><th>Av. físico ejec.</th>
+                <th>Av. financiero prog.</th><th>Av. financiero ejec.</th>
+                <th>Semáforo</th><th>Presupuesto vigente</th><th>Plazo vigente</th><th>Residente</th><th>Supervisor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in filas %}
+            <tr>
+                <td>{{ f.obra.codigo }}</td>
+                <td>{{ f.obra.nombre|truncatechars:45 }}</td>
+                <td>{{ f.obra.get_estado_display }}</td>
+                <td>{{ f.fisico_programado }}%</td>
+                <td>{{ f.fisico_ejecutado }}%</td>
+                <td>{{ f.financiero_programado }}%</td>
+                <td>{{ f.financiero_ejecutado }}%</td>
+                <td>{{ f.semaforo_display }}</td>
+                <td>{{ f.presupuesto_vigente|moneda }}</td>
+                <td>{{ f.plazo_vigente }} días</td>
+                <td>{{ f.obra.residente.get_full_name|default:"-" }}</td>
+                <td>{{ f.obra.supervisor.get_full_name|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="12" style="text-align:center;">No hay obras registradas con los filtros aplicados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endspaceless %}
+
+    <p class="pie">Reporte generado automáticamente por el Sistema de Control y Seguimiento de Obras Públicas (RF-27).</p>
+</body>
+</html>
